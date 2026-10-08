@@ -5,12 +5,14 @@ A Thai-language thesis assistant that answers from `data/Dataset.md` and include
 ## Features
 
 - Ask questions about the thesis guide.
-- Upload DOCX or text-based PDF files (up to 4 MB) for preliminary A4, margin, font, page-number, approval-page, five-chapter structure, and citation consistency checks.
+- Upload DOCX or text-based PDF files (up to 4.4 MB) for preliminary A4, margin, font, page-number, approval-page, five-chapter structure, and citation consistency checks.
 - Improve Thai or English academic prose, review title/objective/hypothesis/statistics alignment, and format citation lists in APA 7 or IEEE style.
 - Create a step-by-step Word request draft for common thesis milestones. The generated file is a draft, not an official university form; official form templates can be added when supplied.
 - Connect a Google account to review an existing Google Doc and save academic writing results to a new Google Doc.
 
 Automated checks are indicative and should be confirmed against the current graduate school requirements. For AI review, extracted document text is sent to Typhoon; uploaded files are not retained by this app.
+
+The upload cap is 4.4 MB because Vercel Functions accept request bodies up to 4.5 MB total, including multipart form overhead. Larger uploads require direct-to-storage uploads (for example, Vercel Blob) rather than sending the file through the app function.
 
 ## Run locally
 

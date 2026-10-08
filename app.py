@@ -429,7 +429,7 @@ async def document_review(
     filename = (file.filename or "document").replace("\\", "/").split("/")[-1]
     raw = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(raw) > MAX_UPLOAD_BYTES:
-        raise HTTPException(status_code=413, detail="ไฟล์ต้องมีขนาดไม่เกิน 4 MB")
+        raise HTTPException(status_code=413, detail="ไฟล์ต้องมีขนาดไม่เกิน 4.4 MB")
     try:
         report = analyze_document(filename, raw, citation_style)
     except ValueError as exc:

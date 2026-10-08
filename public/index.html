@@ -46,7 +46,7 @@
       <section class="tool-view scroll-view" id="reviewView" hidden>
         <div class="panel-card">
           <h1>ตรวจรูปแบบและโครงสร้าง</h1>
-          <p class="help-text">อัปโหลดไฟล์ Word (.docx) หรือ PDF ขนาดไม่เกิน 4 MB ระบบจะตรวจระยะขอบ A4 แบบอักษร เลขหน้า หน้าใบรับรอง โครงสร้าง 5 บท และความสอดคล้องของรายการอ้างอิงเบื้องต้น</p>
+          <p class="help-text">อัปโหลดไฟล์ Word (.docx) หรือ PDF ขนาดไม่เกิน 4.4 MB ระบบจะตรวจระยะขอบ A4 แบบอักษร เลขหน้า หน้าใบรับรอง โครงสร้าง 5 บท และความสอดคล้องของรายการอ้างอิงเบื้องต้น</p>
           <form id="reviewForm" class="stack-form">
             <label class="field-label">ไฟล์วิทยานิพนธ์<input id="documentFile" type="file" accept=".docx,.pdf" required></label>
             <label class="field-label">รูปแบบอ้างอิงที่ต้องการตรวจ
@@ -191,7 +191,7 @@
       const file = document.getElementById('documentFile').files[0];
       const result = document.getElementById('reviewResult');
       if (!file) return;
-      if (file.size > 4 * 1024 * 1024) { showBusy(result, 'ไฟล์ต้องมีขนาดไม่เกิน 4 MB'); return; }
+      if (file.size > 4400000) { showBusy(result, 'ไฟล์ต้องมีขนาดไม่เกิน 4.4 MB'); return; }
       showBusy(result, 'กำลังอ่านไฟล์และตรวจรูปแบบ...');
       const form = new FormData();
       form.append('file', file);

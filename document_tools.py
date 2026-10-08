@@ -11,7 +11,7 @@ from typing import Any
 from docx import Document
 import pdfplumber
 
-MAX_UPLOAD_BYTES = 4 * 1024 * 1024
+MAX_UPLOAD_BYTES = 4_400_000
 MAX_DOCX_UNPACKED_BYTES = 32 * 1024 * 1024
 
 
@@ -226,7 +226,7 @@ def _analyze_pdf(raw: bytes) -> tuple[str, list[dict[str, str]], dict[str, Any]]
 
 def analyze_document(filename: str, raw: bytes, citation_style: str = "auto") -> dict[str, Any]:
     if len(raw) > MAX_UPLOAD_BYTES:
-        raise ValueError("ไฟล์มีขนาดเกิน 4 MB")
+        raise ValueError("ไฟล์มีขนาดเกิน 4.4 MB")
     suffix = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
     if suffix == "docx":
         text, format_checks, metadata = _analyze_docx(raw)
