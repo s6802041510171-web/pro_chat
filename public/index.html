@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -55,6 +56,13 @@
             <button class="primary-btn" type="submit">ตรวจเอกสาร</button>
           </form>
           <div id="reviewResult" class="result-box" aria-live="polite" hidden></div>
+          <div class="google-connect-card">
+            <h2>ตรวจเอกสารจาก Google Docs</h2>
+            <p class="help-text">เชื่อมบัญชี Google แล้ววางลิงก์เอกสารที่คุณมีสิทธิ์เข้าถึง ระบบจะนำเนื้อหามาตรวจโครงสร้างและรูปแบบเบื้องต้น</p>
+            <div class="google-actions"><button class="secondary-btn" type="button" id="googleConnect">เชื่อมต่อ Google</button><span id="googleStatus" aria-live="polite">ยังไม่ได้เชื่อมต่อ</span></div>
+            <label class="field-label">ลิงก์ Google Docs<input id="googleDocUrl" type="url" placeholder="https://docs.google.com/document/d/.../edit"></label>
+            <button class="primary-btn" type="button" id="googleImport">นำเข้าและตรวจเอกสาร</button>
+          </div>
         </div>
       </section>
 
@@ -228,8 +236,84 @@
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || 'วิเคราะห์ไม่สำเร็จ');
         showBusy(result, data.reply);
+        const exportButton = document.createElement('button');
+        exportButton.className = 'secondary-btn export-google-btn'; exportButton.textContent = 'บันทึกผลลัพธ์เป็น Google Docs';
+        exportButton.addEventListener('click', () => exportToGoogleDocs(data.reply, 'ผลจากผู้ช่วยงานเขียนวิทยานิพนธ์'));
+        result.append(document.createElement('br'), exportButton);
       } catch (error) { showBusy(result, `ทำรายการไม่สำเร็จ: ${error.message}`); }
     });
+
+    let googleAccessToken = '';
+    let googleTokenClient = null;
+    let googleTokenResolver = null;
+    async function getGoogleTokenClient() {
+      if (googleTokenClient) return googleTokenClient;
+      const response = await fetch(apiUrl('/api/google/config'));
+      const config = await response.json();
+      if (!config.client_id) throw new Error('ผู้ดูแลระบบต้องกำหนด GOOGLE_CLIENT_ID ก่อนใช้งาน');
+      if (!window.google?.accounts?.oauth2) throw new Error('โหลดระบบเข้าสู่ระบบ Google ไม่สำเร็จ โปรดลองใหม่');
+      googleTokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: config.client_id,
+        scope: 'https://www.googleapis.com/auth/documents.readonly https://www.googleapis.com/auth/drive.file',
+        callback: (tokenResponse) => {
+          if (tokenResponse.error) {
+            document.getElementById('googleStatus').textContent = 'เชื่อมต่อไม่สำเร็จ';
+            googleTokenResolver?.(new Error('การอนุญาต Google ไม่สำเร็จ'));
+          } else {
+            googleAccessToken = tokenResponse.access_token;
+            document.getElementById('googleStatus').textContent = 'เชื่อมต่อแล้ว (เก็บ token ไว้ในหน้านี้ชั่วคราว)';
+            googleTokenResolver?.();
+          }
+          googleTokenResolver = null;
+        }
+      });
+      return googleTokenClient;
+    }
+    async function connectGoogle() {
+      if (googleAccessToken) return;
+      const client = await getGoogleTokenClient();
+      await new Promise((resolve, reject) => {
+        googleTokenResolver = (error) => error ? reject(error) : resolve();
+        client.requestAccessToken({ prompt: 'consent' });
+      });
+    }
+    document.getElementById('googleConnect').addEventListener('click', () => connectGoogle().catch((error) => {
+      document.getElementById('googleStatus').textContent = error.message;
+    }));
+    document.getElementById('googleImport').addEventListener('click', async () => {
+      const url = document.getElementById('googleDocUrl').value.trim();
+      const result = document.getElementById('reviewResult');
+      if (!url) { showBusy(result, 'กรุณาวางลิงก์ Google Docs ก่อน'); return; }
+      if (!googleAccessToken) {
+        try { await connectGoogle(); }
+        catch (error) { showBusy(result, `เชื่อมต่อ Google ไม่สำเร็จ: ${error.message}`); return; }
+      }
+      showBusy(result, 'กำลังนำเข้าเนื้อหาจาก Google Docs และตรวจเอกสาร...');
+      try {
+        const response = await fetch(apiUrl('/api/google/import'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: googleAccessToken, document_url: url })
+        });
+        const data = await response.json();
+        if (response.status === 401) { googleAccessToken = ''; throw new Error('สิทธิ์หมดอายุหรือไม่ได้รับอนุญาต กรุณาเชื่อม Google อีกครั้ง'); }
+        if (!response.ok) throw new Error(data.detail || 'นำเข้าเอกสารไม่สำเร็จ');
+        renderReview(data);
+      } catch (error) { showBusy(result, `นำเข้า Google Docs ไม่สำเร็จ: ${error.message}`); }
+    });
+    async function exportToGoogleDocs(text, title) {
+      try {
+        if (!googleAccessToken) await connectGoogle();
+        const response = await fetch(apiUrl('/api/google/export'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: googleAccessToken, text, title })
+        });
+        const data = await response.json();
+        if (response.status === 401) googleAccessToken = '';
+        if (!response.ok) throw new Error(data.detail || 'สร้าง Google Docs ไม่สำเร็จ');
+        const link = document.createElement('a'); link.href = data.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = `เปิดเอกสาร: ${data.title}`;
+        const result = document.getElementById('writingResult'); result.append(document.createElement('br'), link);
+      } catch (error) { const result = document.getElementById('writingResult'); const note = document.createElement('p'); note.textContent = `บันทึก Google Docs ไม่สำเร็จ: ${error.message}`; result.append(note); }
+    }
 
     const wizardFields = [
       { key: 'form_type', title: 'เลือกประเภทคำร้อง', type: 'select', options: [
