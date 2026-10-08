@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot</title>
+  <!-- Google Fonts: Prompt & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    
+    <!-- Sidebar ฝั่งซ้าย: ข้อมูลระบบ -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-section">
+          <div class="brand-icon">AI</div>
+          <div class="brand-info">
+            <h2>AI Chatbot</h2>
+            <p>Interactive Assistant</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="system-status">
+        <span class="status-dot"></span> ระบบพร้อมใช้งาน
+      </div>
+    </aside>
+
+    <!-- ฝั่งขวา: ห้องแชทขนาดเต็มหน้าจอ -->
+    <main class="chat-section">
+      <div class="chat-header">
+        <div class="chat-header-title">กล่องข้อความโต้ตอบ</div>
+        <div style="font-size: 0.85rem; color: var(--success); font-weight: 500;">● ระบบพร้อมใช้งาน</div>
+      </div>
+
+      <div class="chat-body" id="chatContainer">
+        <div class="msg-wrap bot">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">สวัสดีครับ! ผมคือ AI ผู้ช่วย มีอะไรให้ช่วยไหมครับ</div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="input-box">
+          <input type="text" id="userInput" placeholder="พิมพ์ข้อความที่ต้องการถาม..." onkeydown="if(event.key==='Enter') sendMessage()">
+        </div>
+        <button class="send-btn" onclick="sendMessage()">ส่งข้อความ</button>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chatContainer');
+    const userInput = document.getElementById('userInput');
+
+    // ตัวแปรเก็บประวัติการสนทนาสำหรับคุยต่อเนื่อง
+    const conversationHistory = [];
+
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      // 1. แสดงข้อความฝั่งผู้ใช้บนหน้าจอ
+      chatContainer.innerHTML += `
+        <div class="msg-wrap user">
+          <div class="msg-avatar">👤</div>
+          <div class="msg-bubble">${escapeHtml(text)}</div>
+        </div>
+      `;
+      userInput.value = '';
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // 2. แสดงสถานะกำลังคิด (Typing animation)
+      const tempId = 'temp-' + Date.now();
+      chatContainer.innerHTML += `
+        <div class="msg-wrap bot" id="${tempId}">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      `;
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      try {
+        // 3. ส่งคำถามล่าสุด พร้อมประวัติ 6 ข้อความล่าสุดไปยัง Backend
+        const response = await fetch('http://localhost:10000/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: text,
+            history: conversationHistory.slice(-6)
+          })
+        });
+
+        const data = await response.json();
+        const botElement = document.getElementById(tempId);
+        if (botElement) {
+          const bubble = botElement.querySelector('.msg-bubble');
+          bubble.innerText = data.reply;
+          bubble.classList.remove('typing-dots');
+        }
+
+        // 4. บันทึกบทสนทนาเข้าประวัติ เพื่อใช้เป็นบริบทในรอบถัดไป
+        conversationHistory.push({ role: "user", text: text });
+        conversationHistory.push({ role: "model", text: data.reply });
+
+      } catch (error) {
+        const botElement = document.getElementById(tempId);
+        if (botElement) {
+          const bubble = botElement.querySelector('.msg-bubble');
+          bubble.innerText = "ขออภัยครับ ไม่สามารถเชื่อมต่อกับระบบ Backend ได้ กรุณาตรวจสอบว่าเปิดเซิร์ฟเวอร์ไว้หรือไม่";
+          bubble.classList.remove('typing-dots');
+        }
+      }
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function escapeHtml(string) {
+      return String(string).replace(/[&<>"']/g, function (s) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[s];
+      });
+    }
+  </script>
+</body>
+</html>
