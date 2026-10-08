@@ -59,6 +59,7 @@
   <script>
     const chatContainer = document.getElementById('chatContainer');
     const userInput = document.getElementById('userInput');
+    const apiBase = window.location.protocol === 'file:' ? 'http://localhost:10000' : '';
 
     // ตัวแปรเก็บประวัติการสนทนาสำหรับคุยต่อเนื่อง
     const conversationHistory = [];
@@ -91,7 +92,7 @@
 
       try {
         // 3. ส่งคำถามล่าสุด พร้อมประวัติ 6 ข้อความล่าสุดไปยัง Backend
-        const response = await fetch('/chat', {
+        const response = await fetch(`${apiBase}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 

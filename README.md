@@ -7,7 +7,7 @@ A Thai-language chatbot that answers questions using the thesis preparation and 
 1. Install dependencies: `pip install -r requirements.txt`
 2. Copy `.env.example` to `.env` and set `TYPHOON_API_KEY` in `.env`.
 3. Start the app with `python app.py`.
-4. Open `http://localhost:10000`.
+4. Open `http://localhost:10000` (or open `public/index.html`; the file page connects to the local API at port 10000).
 
 ## Deploy on Vercel
 
