@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Chatbot</title>
+  <title>ผู้ช่วยจัดทำวิทยานิพนธ์</title>
   <!-- Google Fonts: Prompt & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,8 +21,8 @@
         <div class="brand-section">
           <div class="brand-icon">AI</div>
           <div class="brand-info">
-            <h2>AI Chatbot</h2>
-            <p>Interactive Assistant</p>
+            <h2>ผู้ช่วยวิทยานิพนธ์</h2>
+            <p>Thesis Guide Assistant</p>
           </div>
         </div>
       </div>
@@ -42,13 +42,13 @@
       <div class="chat-body" id="chatContainer">
         <div class="msg-wrap bot">
           <div class="msg-avatar">🤖</div>
-          <div class="msg-bubble">สวัสดีครับ! ผมคือ AI ผู้ช่วย มีอะไรให้ช่วยไหมครับ</div>
+          <div class="msg-bubble">สวัสดีครับ ผมช่วยตอบคำถามจากคู่มือการทำและจัดเล่มวิทยานิพนธ์ สอบถามขั้นตอน รูปแบบการพิมพ์ หรือการอ้างอิงได้เลยครับ</div>
         </div>
       </div>
 
       <div class="chat-input-area">
         <div class="input-box">
-          <input type="text" id="userInput" placeholder="พิมพ์ข้อความที่ต้องการถาม..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <input type="text" id="userInput" placeholder="ถามเกี่ยวกับการทำหรือจัดเล่มวิทยานิพนธ์..." onkeydown="if(event.key==='Enter') sendMessage()">
         </div>
         <button class="send-btn" onclick="sendMessage()">ส่งข้อความ</button>
       </div>
