@@ -4,140 +4,288 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ผู้ช่วยจัดทำวิทยานิพนธ์</title>
-  <!-- Google Fonts: Prompt & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="app-layout">
-    
-    <!-- Sidebar ฝั่งซ้าย: ข้อมูลระบบ -->
     <aside class="sidebar">
-      <div>
-        <div class="brand-section">
-          <div class="brand-icon">AI</div>
-          <div class="brand-info">
-            <h2>ผู้ช่วยวิทยานิพนธ์</h2>
-            <p>Thesis Guide Assistant</p>
-          </div>
-        </div>
+      <div class="brand-section">
+        <div class="brand-icon">AI</div>
+        <div class="brand-info"><h2>ผู้ช่วยวิทยานิพนธ์</h2><p>Thesis Guide Assistant</p></div>
       </div>
-
-      <div class="system-status">
-        <span class="status-dot"></span> ระบบพร้อมใช้งาน
-      </div>
+      <nav class="tool-nav" aria-label="เครื่องมือ">
+        <button class="nav-btn active" data-view="chatView">แชตถามคู่มือ</button>
+        <button class="nav-btn" data-view="reviewView">ตรวจไฟล์วิทยานิพนธ์</button>
+        <button class="nav-btn" data-view="writingView">ช่วยเขียนและอ้างอิง</button>
+        <button class="nav-btn" data-view="formView">สร้างแบบร่างคำร้อง</button>
+      </nav>
+      <div class="sidebar-note">การตรวจอัตโนมัติเป็นคำแนะนำเบื้องต้น โปรดตรวจข้อกำหนดทางการก่อนยื่น</div>
+      <div class="system-status"><span class="status-dot"></span> พร้อมใช้งาน</div>
     </aside>
 
-    <!-- ฝั่งขวา: ห้องแชทขนาดเต็มหน้าจอ -->
-    <main class="chat-section">
-      <div class="chat-header">
-        <div class="chat-header-title">กล่องข้อความโต้ตอบ</div>
-        <div style="font-size: 0.85rem; color: var(--success); font-weight: 500;">● ระบบพร้อมใช้งาน</div>
-      </div>
+    <main class="workspace">
+      <header class="workspace-header">
+        <div class="chat-header-title" id="viewTitle">แชตถามคู่มือ</div>
+        <div class="service-status"><span class="status-dot"></span> ระบบพร้อมใช้งาน</div>
+      </header>
 
-      <div class="chat-body" id="chatContainer">
-        <div class="msg-wrap bot">
-          <div class="msg-avatar">🤖</div>
-          <div class="msg-bubble">สวัสดีครับ ผมช่วยตอบคำถามจากคู่มือการทำและจัดเล่มวิทยานิพนธ์ สอบถามขั้นตอน รูปแบบการพิมพ์ หรือการอ้างอิงได้เลยครับ</div>
+      <section class="tool-view" id="chatView">
+        <div class="chat-body" id="chatContainer">
+          <div class="msg-wrap bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">สวัสดีครับ ผมช่วยตอบคำถามจากคู่มือวิทยานิพนธ์ ตรวจไฟล์ ช่วยเกลาภาษา และสร้างแบบร่างคำร้องได้ครับ</div></div>
         </div>
-      </div>
+        <div class="chat-input-area">
+          <div class="input-box"><input type="text" id="userInput" placeholder="ถามเกี่ยวกับการทำหรือจัดเล่มวิทยานิพนธ์..." autocomplete="off"></div>
+          <button class="primary-btn" id="sendChat">ส่งข้อความ</button>
+        </div>
+      </section>
 
-      <div class="chat-input-area">
-        <div class="input-box">
-          <input type="text" id="userInput" placeholder="ถามเกี่ยวกับการทำหรือจัดเล่มวิทยานิพนธ์..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <section class="tool-view scroll-view" id="reviewView" hidden>
+        <div class="panel-card">
+          <h1>ตรวจรูปแบบและโครงสร้าง</h1>
+          <p class="help-text">อัปโหลดไฟล์ Word (.docx) หรือ PDF ขนาดไม่เกิน 4 MB ระบบจะตรวจระยะขอบ A4 แบบอักษร เลขหน้า หน้าใบรับรอง โครงสร้าง 5 บท และความสอดคล้องของรายการอ้างอิงเบื้องต้น</p>
+          <form id="reviewForm" class="stack-form">
+            <label class="field-label">ไฟล์วิทยานิพนธ์<input id="documentFile" type="file" accept=".docx,.pdf" required></label>
+            <label class="field-label">รูปแบบอ้างอิงที่ต้องการตรวจ
+              <select id="citationStyle"><option value="auto">ตรวจจับอัตโนมัติ</option><option value="apa7">APA 7th</option><option value="ieee">IEEE</option></select>
+            </label>
+            <p class="privacy-note">ไฟล์จะถูกประมวลผลในคำขอนี้ ไม่บันทึกเป็นไฟล์ถาวร ข้อความที่สกัดจะส่งให้ Typhoon เพื่อทำ AI review</p>
+            <button class="primary-btn" type="submit">ตรวจเอกสาร</button>
+          </form>
+          <div id="reviewResult" class="result-box" aria-live="polite" hidden></div>
         </div>
-        <button class="send-btn" onclick="sendMessage()">ส่งข้อความ</button>
-      </div>
+      </section>
+
+      <section class="tool-view scroll-view" id="writingView" hidden>
+        <div class="panel-card">
+          <h1>ผู้ช่วยงานเขียนเชิงวิชาการ</h1>
+          <label class="field-label">เลือกเครื่องมือ
+            <select id="writingMode"><option value="paraphrase">เกลาภาษาไทย/อังกฤษ</option><option value="alignment">ตรวจความสอดคล้องงานวิจัย</option><option value="citation">จัดรูปแบบและตรวจรายการอ้างอิง</option></select>
+          </label>
+          <form id="writingForm" class="stack-form">
+            <div id="paraphraseFields">
+              <label class="field-label">ข้อความที่ต้องการปรับ<textarea id="writingText" rows="8" placeholder="วางข้อความที่ต้องการปรับเป็นภาษาเชิงวิชาการ"></textarea></label>
+            </div>
+            <div id="alignmentFields" hidden>
+              <label class="field-label">ชื่อเรื่อง<textarea id="researchTitle" rows="2"></textarea></label>
+              <label class="field-label">วัตถุประสงค์<textarea id="researchObjectives" rows="3"></textarea></label>
+              <label class="field-label">สมมติฐาน<textarea id="researchHypotheses" rows="3" placeholder="เว้นว่างได้ หากไม่มีสมมติฐาน"></textarea></label>
+              <label class="field-label">สถิติที่ใช้<textarea id="researchStatistics" rows="2"></textarea></label>
+            </div>
+            <div id="citationFields" hidden>
+              <label class="field-label">รูปแบบเป้าหมาย<select id="writingCitationStyle"><option value="apa7">APA 7th</option><option value="ieee">IEEE</option></select></label>
+              <label class="field-label">ข้อความอ้างอิง/บรรณานุกรม<textarea id="citationText" rows="8" placeholder="วางการอ้างอิงในเนื้อหาและรายการท้ายเล่ม"></textarea></label>
+            </div>
+            <button class="primary-btn" type="submit">ให้ AI ช่วยตรวจ</button>
+          </form>
+          <div id="writingResult" class="result-box" aria-live="polite" hidden></div>
+        </div>
+      </section>
+
+      <section class="tool-view scroll-view" id="formView" hidden>
+        <div class="panel-card">
+          <h1>ตัวช่วยสร้างคำร้อง</h1>
+          <p class="warning-note">สร้างเป็นเอกสารร่างสำหรับนำข้อมูลไปกรอกในแบบฟอร์มทางการ ไม่ใช่แบบฟอร์มที่มหาวิทยาลัยรับรอง</p>
+          <div class="wizard-progress" id="wizardProgress"></div>
+          <form id="formWizard" class="stack-form">
+            <div id="wizardQuestion"></div>
+            <div class="wizard-actions"><button class="secondary-btn" id="wizardBack" type="button">ย้อนกลับ</button><button class="primary-btn" id="wizardNext" type="submit">ถัดไป</button></div>
+          </form>
+          <div id="formResult" class="result-box" aria-live="polite" hidden></div>
+        </div>
+      </section>
     </main>
-
   </div>
 
   <script>
+    const apiBase = window.location.protocol === 'file:' ? 'http://localhost:10000' : '';
+    const apiUrl = (path) => `${apiBase}${path}`;
+    const conversationHistory = [];
     const chatContainer = document.getElementById('chatContainer');
     const userInput = document.getElementById('userInput');
-    const apiBase = window.location.protocol === 'file:' ? 'http://localhost:10000' : '';
 
-    // ตัวแปรเก็บประวัติการสนทนาสำหรับคุยต่อเนื่อง
-    const conversationHistory = [];
+    document.querySelectorAll('.nav-btn').forEach((button) => button.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach((item) => item.classList.toggle('active', item === button));
+      document.querySelectorAll('.tool-view').forEach((view) => { view.hidden = view.id !== button.dataset.view; });
+      document.getElementById('viewTitle').textContent = button.textContent;
+    }));
+
+    function addMessage(role, text) {
+      const wrap = document.createElement('div');
+      wrap.className = `msg-wrap ${role}`;
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar';
+      avatar.textContent = role === 'user' ? '👤' : '🤖';
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      bubble.textContent = text;
+      wrap.append(avatar, bubble);
+      chatContainer.append(wrap);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return bubble;
+    }
 
     async function sendMessage() {
       const text = userInput.value.trim();
       if (!text) return;
-
-      // 1. แสดงข้อความฝั่งผู้ใช้บนหน้าจอ
-      chatContainer.innerHTML += `
-        <div class="msg-wrap user">
-          <div class="msg-avatar">👤</div>
-          <div class="msg-bubble">${escapeHtml(text)}</div>
-        </div>
-      `;
       userInput.value = '';
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-
-      // 2. แสดงสถานะกำลังคิด (Typing animation)
-      const tempId = 'temp-' + Date.now();
-      chatContainer.innerHTML += `
-        <div class="msg-wrap bot" id="${tempId}">
-          <div class="msg-avatar">🤖</div>
-          <div class="msg-bubble typing-dots">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
-      `;
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-
+      addMessage('user', text);
+      const bubble = addMessage('bot', 'กำลังค้นข้อมูลในคู่มือ...');
       try {
-        // 3. ส่งคำถามล่าสุด พร้อมประวัติ 6 ข้อความล่าสุดไปยัง Backend
-        const response = await fetch(`${apiBase}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            message: text,
-            history: conversationHistory.slice(-6)
-          })
+        const response = await fetch(apiUrl('/chat'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history: conversationHistory.slice(-6) })
         });
-
         const data = await response.json();
-        if (!response.ok || !data.reply) {
-          throw new Error(data.detail || 'Backend request failed');
-        }
-        const botElement = document.getElementById(tempId);
-        if (botElement) {
-          const bubble = botElement.querySelector('.msg-bubble');
-          bubble.innerText = data.reply;
-          bubble.classList.remove('typing-dots');
-        }
-
-        // 4. บันทึกบทสนทนาเข้าประวัติ เพื่อใช้เป็นบริบทในรอบถัดไป
-        conversationHistory.push({ role: "user", text: text });
-        conversationHistory.push({ role: "model", text: data.reply });
-
+        if (!response.ok) throw new Error(data.detail || 'ส่งคำถามไม่สำเร็จ');
+        bubble.textContent = data.reply || 'ไม่พบคำตอบ';
+        conversationHistory.push({ role: 'user', text }, { role: 'model', text: data.reply || '' });
       } catch (error) {
-        const botElement = document.getElementById(tempId);
-        if (botElement) {
-          const bubble = botElement.querySelector('.msg-bubble');
-          bubble.innerText = "ขออภัยครับ ยังเชื่อมต่อระบบตอบคำถามไม่ได้ กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแลระบบ";
-          bubble.classList.remove('typing-dots');
-        }
+        bubble.textContent = `เชื่อมต่อระบบไม่ได้: ${error.message} — เปิด backend ที่ http://localhost:10000 แล้วลองใหม่`;
       }
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    document.getElementById('sendChat').addEventListener('click', sendMessage);
+    userInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') sendMessage(); });
+
+    function showBusy(element, message) { element.hidden = false; element.textContent = message; }
+    function addCheckList(parent, title, checks) {
+      const heading = document.createElement('h3'); heading.textContent = title; parent.append(heading);
+      const list = document.createElement('ul'); list.className = 'check-list';
+      checks.forEach((check) => {
+        const item = document.createElement('li');
+        const status = document.createElement('strong');
+        status.className = `check-status ${check.status}`;
+        status.textContent = check.status === 'pass' || check.status === 'found' ? 'ผ่าน/พบ' : 'ควรตรวจ';
+        const detail = document.createElement('span');
+        detail.textContent = `${check.name}: ${check.detail || check.status}`;
+        item.append(status, detail); list.append(item);
+      });
+      parent.append(list);
+    }
+    function renderReview(report) {
+      const result = document.getElementById('reviewResult');
+      result.replaceChildren(); result.hidden = false;
+      const title = document.createElement('h2'); title.textContent = `ผลตรวจ: ${report.filename}`; result.append(title);
+      const meta = document.createElement('p'); meta.textContent = `${report.file_type} · ${report.extracted_characters.toLocaleString()} ตัวอักษร · ${report.metadata.page_count ?? report.metadata.page_count_note}`; result.append(meta);
+      addCheckList(result, 'รูปแบบเอกสาร', report.format_checks);
+      addCheckList(result, 'โครงสร้าง 5 บท', report.outline_audit.chapters);
+      addCheckList(result, 'องค์ประกอบที่ควรมี', report.outline_audit.elements);
+      const citation = document.createElement('pre'); citation.textContent = `ตรวจอ้างอิง (${report.citation_audit.style.toUpperCase()}):\n${JSON.stringify(report.citation_audit, null, 2)}`; result.append(citation);
+      const aiHeading = document.createElement('h3'); aiHeading.textContent = 'ข้อสังเกตจาก AI'; result.append(aiHeading);
+      const ai = document.createElement('pre'); ai.textContent = report.ai_review || 'ไม่มีผลวิเคราะห์จาก AI'; result.append(ai);
+      const privacy = document.createElement('p'); privacy.className = 'privacy-note'; privacy.textContent = report.privacy_note; result.append(privacy);
     }
 
-    function escapeHtml(string) {
-      return String(string).replace(/[&<>"']/g, function (s) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[s];
-      });
+    document.getElementById('reviewForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const file = document.getElementById('documentFile').files[0];
+      const result = document.getElementById('reviewResult');
+      if (!file) return;
+      if (file.size > 4 * 1024 * 1024) { showBusy(result, 'ไฟล์ต้องมีขนาดไม่เกิน 4 MB'); return; }
+      showBusy(result, 'กำลังอ่านไฟล์และตรวจรูปแบบ...');
+      const form = new FormData();
+      form.append('file', file);
+      form.append('citation_style', document.getElementById('citationStyle').value);
+      try {
+        const response = await fetch(apiUrl('/api/document-review'), { method: 'POST', body: form });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'ตรวจไฟล์ไม่สำเร็จ');
+        renderReview(data);
+      } catch (error) { showBusy(result, `ตรวจไฟล์ไม่สำเร็จ: ${error.message}`); }
+    });
+
+    const writingMode = document.getElementById('writingMode');
+    function updateWritingFields() {
+      const mode = writingMode.value;
+      document.getElementById('paraphraseFields').hidden = mode !== 'paraphrase';
+      document.getElementById('alignmentFields').hidden = mode !== 'alignment';
+      document.getElementById('citationFields').hidden = mode !== 'citation';
     }
+    writingMode.addEventListener('change', updateWritingFields);
+    document.getElementById('writingForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const mode = writingMode.value;
+      const result = document.getElementById('writingResult');
+      const payload = { mode };
+      if (mode === 'paraphrase') payload.text = document.getElementById('writingText').value;
+      if (mode === 'alignment') Object.assign(payload, {
+        title: document.getElementById('researchTitle').value,
+        objectives: document.getElementById('researchObjectives').value,
+        hypotheses: document.getElementById('researchHypotheses').value,
+        statistics: document.getElementById('researchStatistics').value
+      });
+      if (mode === 'citation') Object.assign(payload, {
+        citation_style: document.getElementById('writingCitationStyle').value,
+        citation_text: document.getElementById('citationText').value
+      });
+      showBusy(result, 'กำลังวิเคราะห์...');
+      try {
+        const response = await fetch(apiUrl('/api/academic-writing'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || 'วิเคราะห์ไม่สำเร็จ');
+        showBusy(result, data.reply);
+      } catch (error) { showBusy(result, `ทำรายการไม่สำเร็จ: ${error.message}`); }
+    });
+
+    const wizardFields = [
+      { key: 'form_type', title: 'เลือกประเภทคำร้อง', type: 'select', options: [
+        ['advisor', 'แต่งตั้ง/เปลี่ยนอาจารย์ที่ปรึกษา'], ['topic_exam', 'ขอสอบหัวข้อวิทยานิพนธ์'],
+        ['progress_exam', 'ขอสอบความก้าวหน้า'], ['defense_exam', 'ขอสอบป้องกันวิทยานิพนธ์'], ['submit_thesis', 'ขอส่งเล่มฉบับสมบูรณ์']
+      ]},
+      { key: 'student_name', title: 'ชื่อและนามสกุล', placeholder: 'กรอกชื่อผู้ยื่นคำร้อง' },
+      { key: 'student_id', title: 'รหัสนักศึกษา' },
+      { key: 'program', title: 'หลักสูตรและสาขาวิชา' },
+      { key: 'thesis_title', title: 'ชื่อวิทยานิพนธ์', type: 'textarea' },
+      { key: 'advisor', title: 'อาจารย์ที่ปรึกษา' },
+      { key: 'request_date', title: 'วันที่ยื่นคำร้อง', type: 'date' },
+      { key: 'request_detail', title: 'รายละเอียดหรือเหตุผลประกอบ', type: 'textarea' }
+    ];
+    const wizardValues = {};
+    let wizardStep = 0;
+    const wizardForm = document.getElementById('formWizard');
+    function renderWizardField() {
+      const field = wizardFields[wizardStep];
+      const holder = document.getElementById('wizardQuestion'); holder.replaceChildren();
+      const label = document.createElement('label'); label.className = 'field-label'; label.textContent = field.title;
+      let input;
+      if (field.type === 'select') {
+        input = document.createElement('select');
+        field.options.forEach(([value, text]) => { const option = document.createElement('option'); option.value = value; option.textContent = text; input.append(option); });
+      } else if (field.type === 'textarea') { input = document.createElement('textarea'); input.rows = 4; }
+      else { input = document.createElement('input'); input.type = field.type || 'text'; }
+      input.id = 'wizardCurrent'; input.required = field.key === 'form_type' || field.key === 'student_name' || field.key === 'student_id';
+      input.value = wizardValues[field.key] || '';
+      if (field.placeholder) input.placeholder = field.placeholder;
+      label.append(input); holder.append(label);
+      document.getElementById('wizardProgress').textContent = `คำถาม ${wizardStep + 1} จาก ${wizardFields.length}`;
+      document.getElementById('wizardBack').disabled = wizardStep === 0;
+      document.getElementById('wizardNext').textContent = wizardStep === wizardFields.length - 1 ? 'สร้างแบบร่าง' : 'ถัดไป';
+    }
+    renderWizardField();
+    document.getElementById('wizardBack').addEventListener('click', () => {
+      wizardValues[wizardFields[wizardStep].key] = document.getElementById('wizardCurrent').value;
+      wizardStep = Math.max(0, wizardStep - 1); renderWizardField();
+    });
+    wizardForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      wizardValues[wizardFields[wizardStep].key] = document.getElementById('wizardCurrent').value;
+      if (wizardStep < wizardFields.length - 1) { wizardStep += 1; renderWizardField(); return; }
+      const result = document.getElementById('formResult'); showBusy(result, 'กำลังสร้างไฟล์แบบร่าง...');
+      try {
+        const response = await fetch(apiUrl('/api/forms/generate'), {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(wizardValues)
+        });
+        if (!response.ok) { const error = await response.json(); throw new Error(error.detail || 'สร้างไฟล์ไม่สำเร็จ'); }
+        const blob = await response.blob(); const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url; link.download = 'thesis-request-draft.docx'; link.textContent = 'ดาวน์โหลดแบบร่างคำร้อง (.docx)';
+        result.replaceChildren(); result.hidden = false; result.append(link);
+        const note = document.createElement('p'); note.textContent = 'โปรดตรวจและนำข้อมูลไปกรอกในแบบฟอร์มทางการก่อนยื่น'; result.append(note);
+      } catch (error) { showBusy(result, `สร้างเอกสารไม่สำเร็จ: ${error.message}`); }
+    });
   </script>
 </body>
 </html>

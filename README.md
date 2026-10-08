@@ -1,6 +1,15 @@
 # Thesis Guide Chatbot
 
-A Thai-language chatbot that answers questions using the thesis preparation and formatting guide in `data/Dataset.md`.
+A Thai-language thesis assistant that answers from `data/Dataset.md` and includes document checks, academic writing help, citation review, research alignment review, and a request draft wizard.
+
+## Features
+
+- Ask questions about the thesis guide.
+- Upload DOCX or text-based PDF files (up to 4 MB) for preliminary A4, margin, font, page-number, approval-page, five-chapter structure, and citation consistency checks.
+- Improve Thai or English academic prose, review title/objective/hypothesis/statistics alignment, and format citation lists in APA 7 or IEEE style.
+- Create a step-by-step Word request draft for common thesis milestones. The generated file is a draft, not an official university form; official form templates can be added when supplied.
+
+Automated checks are indicative and should be confirmed against the current graduate school requirements. For AI review, extracted document text is sent to Typhoon; uploaded files are not retained by this app.
 
 ## Run locally
 
