@@ -6,6 +6,7 @@ from typing import Any, List, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 DATASET_PATH = Path(__file__).parent / "data" / "Dataset.md"
+PUBLIC_DIR = Path(__file__).parent / "public"
 CHUNK_SIZE = 1200
 CHUNK_OVERLAP = 120
 
@@ -142,6 +144,16 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 def read_root():
+    return FileResponse(PUBLIC_DIR / "index.html")
+
+
+@app.get("/style.css", include_in_schema=False)
+def read_stylesheet():
+    return FileResponse(PUBLIC_DIR / "style.css", media_type="text/css")
+
+
+@app.get("/health")
+def health_check():
     return {
         "status": "ok",
         "source": "thesis_manual_dataset",

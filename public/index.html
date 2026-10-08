@@ -91,7 +91,7 @@
 
       try {
         // 3. ส่งคำถามล่าสุด พร้อมประวัติ 6 ข้อความล่าสุดไปยัง Backend
-        const response = await fetch('http://localhost:10000/chat', {
+        const response = await fetch('/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -101,6 +101,9 @@
         });
 
         const data = await response.json();
+        if (!response.ok || !data.reply) {
+          throw new Error(data.detail || 'Backend request failed');
+        }
         const botElement = document.getElementById(tempId);
         if (botElement) {
           const bubble = botElement.querySelector('.msg-bubble');
@@ -116,7 +119,7 @@
         const botElement = document.getElementById(tempId);
         if (botElement) {
           const bubble = botElement.querySelector('.msg-bubble');
-          bubble.innerText = "ขออภัยครับ ไม่สามารถเชื่อมต่อกับระบบ Backend ได้ กรุณาตรวจสอบว่าเปิดเซิร์ฟเวอร์ไว้หรือไม่";
+          bubble.innerText = "ขออภัยครับ ยังเชื่อมต่อระบบตอบคำถามไม่ได้ กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแลระบบ";
           bubble.classList.remove('typing-dots');
         }
       }
